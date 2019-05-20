@@ -1,0 +1,32 @@
+version: "2.0"
+services:
+  web:
+    build: ./web
+    #image: "docker_web:test"
+    #image: "undologic/projectbrowser:latest"
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DATABASE_NAME: DOCKER #allows to write scripts to see that you are using docker and not prod
+    volumes:
+      - ./sites-available/:/etc/apache2/sites-available/
+      - ../.:/var/www/vhosts/website.com/www/
+    links:
+      - db
+  db:
+    image: "mysql:5.6.39"
+    command: --max_allowed_packet=932505856 --innodb-log-file-size=150663296     # Set max_allowed_packet to 256M (or any other value)
+    volumes:
+          - ./sql/:/docker-entrypoint-initdb.d
+          # OR local db for large imports
+          # /Users/sacha-lewis/dockerTmp2:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: undologic
+      MYSQL_DATABASE: LIVE_project
+  phpmyadmin:
+    image: "phpmyadmin/phpmyadmin"
+    ports:
+      - "8081:80"
+    links:
+      - db
